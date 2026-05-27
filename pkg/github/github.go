@@ -17,19 +17,9 @@
 package github
 
 import (
-	"bytes"
 	"context"
-	"fmt"
-	"io/ioutil"
-	"os"
-	"strconv"
-	"strings"
 
 	"github.com/google/go-github/github"
-	"github.com/hashicorp/go-retryablehttp"
-	"github.com/olekukonko/tablewriter"
-	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2"
 
 	"github.com/qiniu/goc/pkg/cover"
 )
@@ -61,143 +51,44 @@ type GitPrComment struct {
 
 // NewPrClient creates an Client which be able to comment on Github Pull Request
 func NewPrClient(githubTokenPath, repoOwner, repoName, prNumStr, botUserName, commentFlag string) *GitPrComment {
-	var client *github.Client
+	_ = "STUB: not implemented"
+	return nil
 
 	// performs automatic retries when connection error occurs or a 500-range response code received (except 501)
-	retryClient := retryablehttp.NewClient()
-	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, retryClient.StandardClient())
-
-	prNum, err := strconv.Atoi(prNumStr)
-	if err != nil {
-		logrus.WithError(err).Fatalf("Failed to convert prNumStr(=%v) to int.\n", prNumStr)
-	}
-	token, err := ioutil.ReadFile(githubTokenPath)
-	if err != nil {
-		logrus.WithError(err).Fatalf("Failed to get github token.\n")
-	}
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: strings.TrimSpace(string(token))},
-	)
-	tc := oauth2.NewClient(ctx, ts)
-	client = github.NewClient(tc)
-
-	return &GitPrComment{
-		RobotUserName: botUserName,
-		RepoOwner:     repoOwner,
-		RepoName:      repoName,
-		PrNumber:      prNum,
-		CommentFlag:   commentFlag,
-		Ctx:           ctx,
-		opt:           &github.ListOptions{Page: 1},
-		GithubClient:  client,
-	}
 }
 
 // CreateGithubComment post github comment of diff coverage
 func (c *GitPrComment) CreateGithubComment(commentPrefix string, diffCovList cover.DeltaCovList) (err error) {
-	if len(diffCovList) == 0 {
-		logrus.Printf("Detect 0 files coverage diff, will not comment to github.")
-		return nil
-	}
-	content := GenCommentContent(commentPrefix, diffCovList)
-
-	err = c.PostComment(content, commentPrefix)
-	if err != nil {
-		logrus.WithError(err).Fatalf("Post comment to github failed.")
-	}
-
-	return
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // PostComment post comment on github. It erased the old one if existed to avoid duplicate
 func (c *GitPrComment) PostComment(content, commentPrefix string) error {
+	_ = "STUB: not implemented"
 	//step1: erase history similar comment to avoid too many comment for same job
-	err := c.EraseHistoryComment(commentPrefix)
-	if err != nil {
-		return err
-	}
-
-	//step2: post comment with new result
-	comment := &github.IssueComment{
-		Body: &content,
-	}
-	_, _, err = c.GithubClient.Issues.CreateComment(c.Ctx, c.RepoOwner, c.RepoName, c.PrNumber, comment)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
+//step2: post comment with new result
+
 // EraseHistoryComment erase history similar comment before post again
 func (c *GitPrComment) EraseHistoryComment(commentPrefix string) error {
-	comments, _, err := c.GithubClient.Issues.ListComments(c.Ctx, c.RepoOwner, c.RepoName, c.PrNumber, nil)
-	if err != nil {
-		logrus.Errorf("list PR comments failed.")
-		return err
-	}
-	logrus.Infof("the count of history comments by %s is: %v", c.RobotUserName, len(comments))
-
-	for _, cm := range comments {
-		if *cm.GetUser().Login == c.RobotUserName && strings.HasPrefix(cm.GetBody(), commentPrefix) {
-			_, err = c.GithubClient.Issues.DeleteComment(c.Ctx, c.RepoOwner, c.RepoName, *cm.ID)
-			if err != nil {
-				logrus.Errorf("delete PR comments %d failed.", *cm.ID)
-				return err
-			}
-		}
-	}
-
+	_ = "STUB: not implemented"
 	return nil
 }
 
 // GetPrChangedFiles get github pull request changes file list
 func (c *GitPrComment) GetPrChangedFiles() (files []string, err error) {
-	var commitFiles []*github.CommitFile
-	for {
-		f, resp, err := c.GithubClient.PullRequests.ListFiles(c.Ctx, c.RepoOwner, c.RepoName, c.PrNumber, c.opt)
-		if err != nil {
-			logrus.Errorf("Get PR changed file failed. repoOwner is: %s, repoName is: %s, prNum is: %d", c.RepoOwner, c.RepoName, c.PrNumber)
-			return nil, err
-		}
-		commitFiles = append(commitFiles, f...)
-		if resp.NextPage == 0 {
-			break
-		}
-		c.opt.Page = resp.NextPage
-	}
-	logrus.Infof("get %d PR changed files:", len(commitFiles))
-	for _, file := range commitFiles {
-		files = append(files, *file.Filename)
-		logrus.Infof("%s", *file.Filename)
-	}
-	return
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
 // GetCommentFlag get CommentFlag from the GitPrComment
-func (c *GitPrComment) GetCommentFlag() string {
-	return c.CommentFlag
-}
+func (c *GitPrComment) GetCommentFlag() string { _ = "STUB: not implemented"; return "" }
 
 // GenCommentContent generate github comment content based on diff coverage and commentFlag
 func GenCommentContent(commentPrefix string, delta cover.DeltaCovList) string {
-	var buf bytes.Buffer
-	table := tablewriter.NewWriter(&buf)
-	table.SetHeader([]string{"File", "Base Coverage", "New Coverage", "Delta"})
-	table.SetAutoFormatHeaders(false)
-	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-	table.SetCenterSeparator("|")
-	table.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER})
-	for _, d := range delta {
-		table.Append([]string{fmt.Sprintf("[%s](%s)", d.FileName, d.LineCovLink), d.BasePer, d.NewPer, d.DeltaPer})
-	}
-	table.Render()
-
-	content := []string{
-		commentPrefix,
-		fmt.Sprintf("Say `/test %s` to re-run this coverage report", os.Getenv("JOB_NAME")),
-		buf.String(),
-	}
-
-	return strings.Join(content, "\n")
+	_ = "STUB: not implemented"
+	return ""
 }

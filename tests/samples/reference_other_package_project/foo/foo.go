@@ -1,7 +1,3 @@
 package foo
 
-import "fmt"
-
-func PrintFoo() {
-	fmt.Println("hello, world.")
-}
+func PrintFoo() { _ = "STUB: not implemented"; return }

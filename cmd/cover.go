@@ -17,9 +17,7 @@
 package cmd
 
 import (
-	"github.com/qiniu/goc/pkg/cover"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var coverCmd = &cobra.Command{
@@ -42,20 +40,7 @@ goc cover --center=http://127.0.0.1:7777 --target=/path/to/target --mode=atomic
 	},
 }
 
-func runCover(target string) {
-	buildFlags := viper.GetString("buildflags")
-	ci := &cover.CoverInfo{
-		Args:           buildFlags,
-		GoPath:         "",
-		Target:         target,
-		Mode:           coverMode.String(),
-		AgentPort:      agentPort.String(),
-		Center:         center,
-		Singleton:      singleton,
-		OneMainPackage: false,
-	}
-	_ = cover.Execute(ci)
-}
+func runCover(target string) { _ = "STUB: not implemented"; return }
 
 func init() {
 	coverCmd.Flags().StringVar(&target, "target", ".", "target folder to cover")

@@ -3,36 +3,18 @@ package main
 import (
 	"fmt"
 	"io"
-	"math"
 	"strings"
 )
 
-func foobar() {
-	defer fmt.Println("hello")
-	go func() {
+func foobar() { _ = "STUB: not implemented"; return }
 
-	}()
-}
+func foobar1() string { _ = "STUB: not implemented"; return "" }
 
-func foobar1() string {
-	return "s"
-}
+func adder() func(int) int { _ = "STUB: not implemented"; return nil }
 
-func adder() func(int) int {
-	sum := 0
-	return func(x int) int {
-		sum += x
-		return sum
-	}
-}
+func generateInteger() int { _ = "STUB: not implemented"; return 0 }
 
-func generateInteger() int {
-	return 10
-}
-
-func generateSlice() []int {
-	return []int{1, 2, 3}
-}
+func generateSlice() []int { _ = "STUB: not implemented"; return nil }
 
 func main() {
 	a := foobar1()
@@ -144,32 +126,12 @@ type Vertex struct {
 	X, Y float64
 }
 
-func (v Vertex) Abs() float64 {
-	return math.Sqrt(v.X*v.X + v.Y*v.Y)
-}
+func (v Vertex) Abs() float64 { _ = "STUB: not implemented"; return 0 }
 
-func do(i interface{}) {
-	switch v := i.(type) {
-	case int:
-		fmt.Printf("Twice %v is %v\n", v, v*2)
-	case string:
-		fmt.Printf("%q is %v bytes long\n", v, len(v))
-	default:
-		fmt.Printf("I don't know about type %T!\n", v)
-	}
-}
+func do(i interface{}) { _ = "STUB: not implemented"; return }
 
-func sum(s []int, c chan int) {
-	sum := 0
-	for _, v := range s {
-		sum += v
-	}
-	c <- sum // send sum to c
-}
+func sum(s []int, c chan int) { _ = "STUB: not implemented"; return }
 
-func sqrt(x float64) string {
-	if x < 0 {
-		return sqrt(-x) + "i"
-	}
-	return fmt.Sprint(math.Sqrt(x))
-}
+// send sum to c
+
+func sqrt(x float64) string { _ = "STUB: not implemented"; return "" }

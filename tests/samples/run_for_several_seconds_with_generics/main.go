@@ -19,6 +19,4 @@ type c interface {
 	~int | ~uint
 }
 
-func mulBy[T c, U c](x T, y U) T {
-	return x * T(y)
-}
+func mulBy[T c, U c](x T, y U) T { _ = "STUB: not implemented"; return *new(T) }

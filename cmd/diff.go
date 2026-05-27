@@ -17,18 +17,8 @@
 package cmd
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"os"
-
-	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-
-	"github.com/qiniu/goc/pkg/cover"
-	"github.com/qiniu/goc/pkg/github"
-	"github.com/qiniu/goc/pkg/prow"
-	"github.com/qiniu/goc/pkg/qiniu"
 )
 
 var diffCmd = &cobra.Command{
@@ -106,104 +96,8 @@ func init() {
 // | qiniu.com/kodo/bd/pfd/pfdstg/svr/getstripe.go        |     0.5%      |     0.0%     | -0.5%  |
 // | Total                                                |     35.7%     |    35.7%     | -0.0%  |
 // +------------------------------------------------------+---------------+--------------+--------+
-func doDiffForLocalProfiles(cmd *cobra.Command, args []string) {
-	localP, err := cover.ReadFileToCoverList(newProfile)
-	if err != nil {
-		logrus.Fatal(err)
-	}
+func doDiffForLocalProfiles(cmd *cobra.Command, args []string) { _ = "STUB: not implemented"; return }
 
-	baseP, err := cover.ReadFileToCoverList(baseProfile)
-	if err != nil {
-		logrus.Fatal(err)
-	}
+//calculate diff file cov and display
 
-	//calculate diff file cov and display
-	rows := cover.GetDeltaCov(localP, baseP)
-	rows.Sort()
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"File", "Base Coverage", "New Coverage", "Delta"})
-	table.SetAutoFormatHeaders(false)
-	table.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER})
-	for _, row := range rows {
-		table.Append([]string{row.FileName, row.BasePer, row.NewPer, row.DeltaPer})
-	}
-	totalDelta := cover.PercentStr(cover.TotalDelta(localP, baseP))
-	table.Append([]string{"Total", baseP.TotalPercentage(), localP.TotalPercentage(), totalDelta})
-	table.Render()
-}
-
-func doDiffUnderProw(cmd *cobra.Command, args []string) {
-	var (
-		prNumStr  = os.Getenv("PULL_NUMBER")
-		pullSha   = os.Getenv("PULL_PULL_SHA")
-		baseSha   = os.Getenv("PULL_BASE_SHA")
-		repoOwner = os.Getenv("REPO_OWNER")
-		repoName  = os.Getenv("REPO_NAME")
-		jobType   = os.Getenv("JOB_TYPE")
-		jobName   = os.Getenv("JOB_NAME")
-		buildStr  = os.Getenv("BUILD_NUMBER")
-		artifacts = os.Getenv("ARTIFACTS")
-	)
-	logrus.Printf("Running coverage for PR = %s; PR commit SHA = %s;base SHA = %s", prNumStr, pullSha, baseSha)
-
-	switch jobType {
-	case "periodic":
-		logrus.Printf("job type %s, do nothing", jobType)
-	case "postsubmit":
-		logrus.Printf("job type %s, do nothing", jobType)
-	case "presubmit":
-		if githubToken == "" {
-			logrus.Fatalf("github token not provided")
-		}
-		prClient := github.NewPrClient(githubToken, repoOwner, repoName, prNumStr, robotName, githubCommentPrefix)
-
-		if qiniuCredential == "" {
-			logrus.Fatalf("qiniu credential not provided")
-		}
-		var qc qiniu.Client
-		var conf qiniu.Config
-		files, err := ioutil.ReadFile(*&qiniuCredential)
-		if err != nil {
-			logrus.WithError(err).Fatal("Error reading qiniu config file")
-		}
-		if err := json.Unmarshal(files, &conf); err != nil {
-			logrus.Fatal("Error unmarshal qiniu config file")
-		}
-		if conf.Bucket == "" {
-			logrus.Fatal("no qiniu bucket provided")
-		}
-		if conf.AccessKey == "" || conf.SecretKey == "" {
-			logrus.Fatal("either qiniu access key or secret key was not provided")
-		}
-		if conf.Domain == "" {
-			logrus.Fatal("no qiniu bucket domain was provided")
-		}
-		qc = qiniu.NewClient(&conf)
-
-		localArtifacts := qiniu.ProfileArtifacts{
-			Directory:          artifacts,
-			ProfileName:        newProfile,
-			ChangedProfileName: qiniu.ChangedProfileName,
-		}
-
-		job := prow.Job{
-			JobName:                jobName,
-			BuildId:                buildStr,
-			Org:                    repoOwner,
-			RepoName:               repoName,
-			PRNumStr:               prNumStr,
-			PostSubmitJob:          prowPostSubmitJob,
-			LocalProfilePath:       newProfile,
-			PostSubmitCoverProfile: prowProfile,
-			QiniuClient:            qc,
-			LocalArtifacts:         &localArtifacts,
-			GithubComment:          prClient,
-			FullDiff:               fullDiff,
-		}
-		if err := job.RunPresubmit(); err != nil {
-			logrus.Fatalf("run presubmit job failed, err: %v", err)
-		}
-	default:
-		logrus.Printf("Unknown job type: %s, do nothing.", jobType)
-	}
-}
+func doDiffUnderProw(cmd *cobra.Command, args []string) { _ = "STUB: not implemented"; return }

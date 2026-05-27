@@ -17,27 +17,10 @@
 package cover
 
 import (
-	"bufio"
-	"bytes"
-	"crypto/sha256"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
-	"io/ioutil"
-	"os"
 	"os/exec"
-	"path"
-	"path/filepath"
-	"sort"
-	"strconv"
-	"strings"
 	"time"
-
-	log "github.com/sirupsen/logrus"
-
-	"github.com/qiniu/goc/pkg/cover/internal/tool"
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -144,275 +127,88 @@ type CoverInfo struct {
 }
 
 // Execute inject cover variables for all the .go files in the target folder
-func Execute(coverInfo *CoverInfo) error {
-	target := coverInfo.Target
-	newGopath := coverInfo.GoPath
-	// oneMainPackage := coverInfo.OneMainPackage
-	args := coverInfo.Args
-	mode := coverInfo.Mode
-	agentPort := coverInfo.AgentPort
-	center := coverInfo.Center
-	singleton := coverInfo.Singleton
-	globalCoverVarImportPath := coverInfo.GlobalCoverVarImportPath
+func Execute(coverInfo *CoverInfo) error { _ = "STUB: not implemented"; return nil }
 
-	if coverInfo.IsMod {
-		globalCoverVarImportPath = filepath.Join(coverInfo.ModRootPath, globalCoverVarImportPath)
-	} else {
-		globalCoverVarImportPath = filepath.Base(globalCoverVarImportPath)
-	}
+// oneMainPackage := coverInfo.OneMainPackage
 
-	if !isDirExist(target) {
-		log.Errorf("Target directory %s not exist", target)
-		return ErrCoverPkgFailed
-	}
-	listArgs := []string{"-json"}
-	if len(args) != 0 {
-		listArgs = append(listArgs, args)
-	}
-	listArgs = append(listArgs, "./...")
-	pkgs, err := ListPackages(target, strings.Join(listArgs, " "), newGopath)
-	if err != nil {
-		log.Errorf("Fail to list all packages, the error: %v", err)
-		return err
-	}
+// var seenCache = make(map[string]*PackageCover)
 
-	var seen = make(map[string]*PackageCover)
-	// var seenCache = make(map[string]*PackageCover)
-	allDecl := ""
-	for _, pkg := range pkgs {
-		if pkg.Name == "main" {
-			log.Printf("handle package: %v", pkg.ImportPath)
-			// inject the main package
-			mainCover, mainDecl := AddCounters(pkg, mode, globalCoverVarImportPath)
-			allDecl += mainDecl
-			// new a testcover for this service
-			tc := TestCover{
-				Mode:                     mode,
-				AgentPort:                agentPort,
-				Center:                   center,
-				Singleton:                singleton,
-				MainPkgCover:             mainCover,
-				GlobalCoverVarImportPath: globalCoverVarImportPath,
-			}
+// inject the main package
 
-			// handle its dependency
-			// var internalPkgCache = make(map[string][]*PackageCover)
-			tc.CacheCover = make(map[string]*PackageCover)
-			for _, dep := range pkg.Deps {
-				if packageCover, ok := seen[dep]; ok {
-					tc.DepsCover = append(tc.DepsCover, packageCover)
-					continue
-				}
+// new a testcover for this service
 
-				//only focus package neither standard Go library nor dependency library
-				if depPkg, ok := pkgs[dep]; ok {
-					packageCover, depDecl := AddCounters(depPkg, mode, globalCoverVarImportPath)
-					allDecl += depDecl
-					tc.DepsCover = append(tc.DepsCover, packageCover)
-					seen[dep] = packageCover
-				}
-			}
+// handle its dependency
+// var internalPkgCache = make(map[string][]*PackageCover)
 
-			// inject Http Cover APIs
-			var httpCoverApis = fmt.Sprintf("%s/http_cover_apis_auto_generated.go", pkg.Dir)
-			if err := InjectCountersHandlers(tc, httpCoverApis); err != nil {
-				log.Errorf("failed to inject counters for package: %s, err: %v", pkg.ImportPath, err)
-				return ErrCoverPkgFailed
-			}
-		}
-	}
+//only focus package neither standard Go library nor dependency library
 
-	return injectGlobalCoverVarFile(coverInfo, allDecl)
-}
+// inject Http Cover APIs
 
 // ListPackages list all packages under specific via go list command
 // The argument newgopath is if you need to go list in a different GOPATH
 func ListPackages(dir string, args string, newgopath string) (map[string]*Package, error) {
-	cmd := exec.Command("/bin/bash", "-c", "go list "+args)
-	log.Printf("go list cmd is: %v", cmd.Args)
-	cmd.Dir = dir
-	if newgopath != "" {
-		cmd.Env = append(os.Environ(), fmt.Sprintf("GOPATH=%v", newgopath))
-	}
-	var errbuf bytes.Buffer
-	cmd.Stderr = &errbuf
-	out, err := cmd.Output()
-	if err != nil {
-		log.Errorf("excute `go list -json ./...` command failed, err: %v, stdout: %v, stderr: %v", err, string(out), errbuf.String())
-		return nil, ErrCoverListFailed
-	}
-	log.Infof("\n%v", errbuf.String())
-	dec := json.NewDecoder(bytes.NewReader(out))
-	pkgs := make(map[string]*Package, 0)
-	for {
-		var pkg Package
-		if err := dec.Decode(&pkg); err != nil {
-			if err == io.EOF {
-				break
-			}
-			log.Errorf("reading go list output: %v", err)
-			return nil, ErrCoverListFailed
-		}
-		if pkg.Error != nil {
-			log.Errorf("list package %s failed with output: %v", pkg.ImportPath, pkg.Error)
-			return nil, ErrCoverPkgFailed
-		}
-
-		// for _, err := range pkg.DepsErrors {
-		// 	log.Fatalf("dependency package list failed, err: %v", err)
-		// }
-
-		pkgs[pkg.ImportPath] = &pkg
-	}
-	return pkgs, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
+
+// for _, err := range pkg.DepsErrors {
+// 	log.Fatalf("dependency package list failed, err: %v", err)
+// }
 
 // AddCounters is different from official go tool cover
 // 1. only inject covervar++ into source file
 // 2. no declarartions for these covervars
 // 3. return the declarations as string
 func AddCounters(pkg *Package, mode string, globalCoverVarImportPath string) (*PackageCover, string) {
-	coverVarMap := declareCoverVars(pkg)
-
-	decl := ""
-	for file, coverVar := range coverVarMap {
-		decl += "\n" + tool.Annotate(path.Join(pkg.Dir, file), mode, coverVar.Var, globalCoverVarImportPath) + "\n"
-	}
-
-	return &PackageCover{
-		Package: pkg,
-		Vars:    coverVarMap,
-	}, decl
+	_ = "STUB: not implemented"
+	return nil, ""
 }
 
-func isDirExist(path string) bool {
-	s, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-	return s.IsDir()
-}
+func isDirExist(path string) bool { _ = "STUB: not implemented"; return false }
 
 // Refer: https://github.com/golang/go/blob/master/src/cmd/go/internal/load/pkg.go#L1334:6
 // hasInternalPath looks for the final "internal" path element in the given import path.
 // If there isn't one, hasInternalPath returns ok=false.
 // Otherwise, hasInternalPath returns ok=true and the index of the "internal".
 func hasInternalPath(path string) bool {
+	_ = "STUB: not implemented"
 	// Three cases, depending on internal at start/end of string or not.
 	// The order matters: we must return the index of the final element,
 	// because the final one produces the most restrictive requirement
 	// on the importer.
-	switch {
-	case strings.HasSuffix(path, "/internal"):
-		return true
-	case strings.Contains(path, "/internal/"):
-		return true
-	case path == "internal", strings.HasPrefix(path, "internal/"):
-		return true
-	}
 	return false
 }
 
-func getInternalParent(path string) string {
-	switch {
-	case strings.HasSuffix(path, "/internal"):
-		return strings.Split(path, "/internal")[0]
-	case strings.Contains(path, "/internal/"):
-		return strings.Split(path, "/internal/")[0]
-	case path == "internal":
-		return ""
-	case strings.HasPrefix(path, "internal/"):
-		return strings.Split(path, "internal/")[0]
-	}
-	return ""
-}
+func getInternalParent(path string) string { _ = "STUB: not implemented"; return "" }
 
 func buildCoverCmd(file string, coverVar *FileVar, pkg *Package, mode, newgopath string) *exec.Cmd {
+	_ = "STUB: not implemented"
 	// to construct: go tool cover -mode=atomic -o dest src (note: dest==src)
-	var newArgs = []string{"tool", "cover"}
-	newArgs = append(newArgs, "-mode", mode)
-	newArgs = append(newArgs, "-var", coverVar.Var)
-	longPath := path.Join(pkg.Dir, file)
-	newArgs = append(newArgs, "-o", longPath, longPath)
-	cmd := exec.Command("go", newArgs...)
-	if newgopath != "" {
-		cmd.Env = append(os.Environ(), fmt.Sprintf("GOPATH=%v", newgopath))
-	}
-	return cmd
+	return nil
 }
 
 // declareCoverVars attaches the required cover variables names
 // to the files, to be used when annotating the files.
-func declareCoverVars(p *Package) map[string]*FileVar {
-	coverVars := make(map[string]*FileVar)
-	coverIndex := 0
-	// We create the cover counters as new top-level variables in the package.
-	// We need to avoid collisions with user variables (GoCover_0 is unlikely but still)
-	// and more importantly with dot imports of other covered packages,
-	// so we append 12 hex digits from the SHA-256 of the import path.
-	// The point is only to avoid accidents, not to defeat users determined to
-	// break things.
-	sum := sha256.Sum256([]byte(p.ImportPath))
-	h := fmt.Sprintf("%x", sum[:6])
-	for _, file := range p.GoFiles {
-		// These names appear in the cmd/cover HTML interface.
-		var longFile = path.Join(p.ImportPath, file)
-		coverVars[file] = &FileVar{
-			File: longFile,
-			Var:  fmt.Sprintf("GoCover_%d_%x", coverIndex, h),
-		}
-		coverIndex++
-	}
+func declareCoverVars(p *Package) map[string]*FileVar { _ = "STUB: not implemented"; return nil }
 
-	for _, file := range p.CgoFiles {
-		// These names appear in the cmd/cover HTML interface.
-		var longFile = path.Join(p.ImportPath, file)
-		coverVars[file] = &FileVar{
-			File: longFile,
-			Var:  fmt.Sprintf("GoCover_%d_%x", coverIndex, h),
-		}
-		coverIndex++
-	}
+// We create the cover counters as new top-level variables in the package.
+// We need to avoid collisions with user variables (GoCover_0 is unlikely but still)
+// and more importantly with dot imports of other covered packages,
+// so we append 12 hex digits from the SHA-256 of the import path.
+// The point is only to avoid accidents, not to defeat users determined to
+// break things.
 
-	return coverVars
-}
+// These names appear in the cmd/cover HTML interface.
 
-func declareCacheVars(in *PackageCover) map[string]*FileVar {
-	sum := sha256.Sum256([]byte(in.Package.ImportPath))
-	h := fmt.Sprintf("%x", sum[:5])
+// These names appear in the cmd/cover HTML interface.
 
-	vars := make(map[string]*FileVar)
-	coverIndex := 0
-	for _, v := range in.Vars {
-		cacheVar := fmt.Sprintf("GoCacheCover_%d_%x", coverIndex, h)
-		vars[cacheVar] = v
-		coverIndex++
-	}
-	return vars
-}
+func declareCacheVars(in *PackageCover) map[string]*FileVar { _ = "STUB: not implemented"; return nil }
 
-func cacheInternalCover(in *PackageCover) *PackageCover {
-	c := &PackageCover{}
-	vars := declareCacheVars(in)
-	c.Package = in.Package
-	c.Vars = vars
-	return c
-}
+func cacheInternalCover(in *PackageCover) *PackageCover { _ = "STUB: not implemented"; return nil }
 
 func addCacheCover(pkg *Package, in *PackageCover) *PackageCover {
-	c := &PackageCover{}
-	sum := sha256.Sum256([]byte(pkg.ImportPath))
-	h := fmt.Sprintf("%x", sum[:6])
-	goFile := fmt.Sprintf("cache_vars_auto_generated_%x.go", h)
-	p := &Package{
-		Dir:        fmt.Sprintf("%s/cache_%x", pkg.Dir, h),
-		ImportPath: fmt.Sprintf("%s/cache_%x", pkg.ImportPath, h),
-		Name:       fmt.Sprintf("cache_%x", h),
-	}
-	p.GoFiles = append(p.GoFiles, goFile)
-	c.Package = p
-	c.Vars = declareCacheVars(in)
-	return c
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // CoverageList is a collection and summary over multiple file Coverage objects
@@ -434,145 +230,65 @@ type codeBlock struct {
 
 // CovList converts profile to CoverageList struct
 func CovList(f io.Reader) (g CoverageList, err error) {
-	scanner := bufio.NewScanner(f)
-	scanner.Scan() // discard first line
-	g = NewCoverageList()
-
-	for scanner.Scan() {
-		row := scanner.Text()
-		blk, err := toBlock(row)
-		if err != nil {
-			return nil, err
-		}
-		blk.addToGroupCov(&g)
-	}
-	return
+	_ = "STUB: not implemented"
+	return *new(CoverageList), nil
 }
+
+// discard first line
 
 // ReadFileToCoverList coverts profile file to CoverageList struct
 func ReadFileToCoverList(path string) (g CoverageList, err error) {
-	f, err := ioutil.ReadFile(path)
-	if err != nil {
-		logrus.Errorf("Open file %s failed!", path)
-		return nil, err
-	}
-	g, err = CovList(bytes.NewReader(f))
-	return
+	_ = "STUB: not implemented"
+	return *new(CoverageList), nil
 }
 
 // NewCoverageList return empty CoverageList
-func NewCoverageList() CoverageList {
-	return CoverageList{}
+func NewCoverageList() CoverageList { _ = "STUB: not implemented"; return *new(CoverageList) }
 
-}
-
-func newCoverage(name string) *Coverage {
-	return &Coverage{name, 0, 0, ""}
-}
+func newCoverage(name string) *Coverage { _ = "STUB: not implemented"; return nil }
 
 // convert a line in profile file to a codeBlock struct
-func toBlock(line string) (res *codeBlock, err error) {
-	slice := strings.Split(line, " ")
-	if len(slice) != 3 {
-		return nil, fmt.Errorf("the profile line %s is not expected", line)
-	}
-	blockName := slice[0]
-	nStmts, _ := strconv.Atoi(slice[1])
-	coverageCount, _ := strconv.Atoi(slice[2])
-	return &codeBlock{
-		fileName:      blockName[:strings.Index(blockName, ":")],
-		numStatements: nStmts,
-		coverageCount: coverageCount,
-	}, nil
-}
+func toBlock(line string) (res *codeBlock, err error) { _ = "STUB: not implemented"; return nil, nil }
 
 // add blk Coverage to file group Coverage
-func (blk *codeBlock) addToGroupCov(g *CoverageList) {
-	if g.size() == 0 || g.lastElement().Name() != blk.fileName {
-		// when a new file name is processed
-		coverage := newCoverage(blk.fileName)
-		g.append(coverage)
-	}
-	cov := g.lastElement()
-	cov.NAllStmts += blk.numStatements
-	if blk.coverageCount > 0 {
-		cov.NCoveredStmts += blk.numStatements
-	}
-}
+func (blk *codeBlock) addToGroupCov(g *CoverageList) { _ = "STUB: not implemented"; return }
 
-func (g CoverageList) size() int {
-	return len(g)
-}
+// when a new file name is processed
 
-func (g CoverageList) lastElement() *Coverage {
-	return &g[g.size()-1]
-}
+func (g CoverageList) size() int { _ = "STUB: not implemented"; return 0 }
 
-func (g *CoverageList) append(c *Coverage) {
-	*g = append(*g, *c)
-}
+func (g CoverageList) lastElement() *Coverage { _ = "STUB: not implemented"; return nil }
+
+func (g *CoverageList) append(c *Coverage) { _ = "STUB: not implemented"; return }
 
 // Sort sorts CoverageList with filenames
-func (g CoverageList) Sort() {
-	sort.SliceStable(g, func(i, j int) bool {
-		return g[i].Name() < g[j].Name()
-	})
-}
+func (g CoverageList) Sort() { _ = "STUB: not implemented"; return }
 
 // TotalPercentage returns the total percentage of coverage
-func (g CoverageList) TotalPercentage() string {
-	ratio, err := g.TotalRatio()
-	if err == nil {
-		return PercentStr(ratio)
-	}
-	return "N/A"
-}
+func (g CoverageList) TotalPercentage() string { _ = "STUB: not implemented"; return "" }
 
 // TotalRatio returns the total ratio of covered statements
 func (g CoverageList) TotalRatio() (ratio float32, err error) {
-	var total Coverage
-	for _, c := range g {
-		total.NCoveredStmts += c.NCoveredStmts
-		total.NAllStmts += c.NAllStmts
-	}
-	return total.Ratio()
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
 // Map returns maps the file name to its coverage for faster retrieval
 // & membership check
-func (g CoverageList) Map() map[string]Coverage {
-	m := make(map[string]Coverage)
-	for _, c := range g {
-		m[c.Name()] = c
-	}
-	return m
-}
+func (g CoverageList) Map() map[string]Coverage { _ = "STUB: not implemented"; return nil }
 
 // Name returns the file name
 func (c *Coverage) Name() string {
-	return c.FileName
+	_ = "STUB: not implemented"
+
+	// Percentage returns the percentage of statements covered
+	return ""
 }
 
-// Percentage returns the percentage of statements covered
-func (c *Coverage) Percentage() string {
-	ratio, err := c.Ratio()
-	if err == nil {
-		return PercentStr(ratio)
-	}
-	return "N/A"
-}
+func (c *Coverage) Percentage() string { _ = "STUB: not implemented"; return "" }
 
 // Ratio calculates the ratio of statements in a profile
-func (c *Coverage) Ratio() (ratio float32, err error) {
-	if c.NAllStmts == 0 {
-		err = fmt.Errorf("[%s] has 0 statement", c.Name())
-	} else {
-		ratio = float32(c.NCoveredStmts) / float32(c.NAllStmts)
-	}
-	return
-}
+func (c *Coverage) Ratio() (ratio float32, err error) { _ = "STUB: not implemented"; return 0, nil }
 
 // PercentStr converts a fraction number to percentage string representation
-func PercentStr(f float32) string {
-	return fmt.Sprintf("%.1f%%", f*100)
-}
+func PercentStr(f float32) string { _ = "STUB: not implemented"; return "" }

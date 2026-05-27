@@ -16,8 +16,6 @@
 
 package cover
 
-import "sort"
-
 // DeltaCov contains the info of a delta coverage
 type DeltaCov struct {
 	FileName    string
@@ -32,105 +30,47 @@ type DeltaCovList []DeltaCov
 
 // GetFullDeltaCov get full delta coverage between new and base profile
 func GetFullDeltaCov(newList CoverageList, baseList CoverageList) (delta DeltaCovList) {
-	newMap := newList.Map()
-	baseMap := baseList.Map()
-
-	for file, n := range newMap {
-		b, ok := baseMap[file]
-		//if the file not in base profile, set None
-		if !ok {
-			delta = append(delta, DeltaCov{
-				FileName: file,
-				BasePer:  "None",
-				NewPer:   n.Percentage(),
-				DeltaPer: PercentStr(Delta(n, b))})
-			continue
-		}
-		delta = append(delta, DeltaCov{
-			FileName: file,
-			BasePer:  b.Percentage(),
-			NewPer:   n.Percentage(),
-			DeltaPer: PercentStr(Delta(n, b))})
-	}
-
-	for file, b := range baseMap {
-		//if the file not in new profile, set None
-		if n, ok := newMap[file]; !ok {
-			delta = append(delta, DeltaCov{
-				FileName: file,
-				BasePer:  b.Percentage(),
-				NewPer:   "None",
-				DeltaPer: PercentStr(Delta(n, b))})
-		}
-	}
-	return
+	_ = "STUB: not implemented"
+	return *new(DeltaCovList)
 }
+
+//if the file not in base profile, set None
+
+//if the file not in new profile, set None
 
 // GetDeltaCov get two profile diff cov
 func GetDeltaCov(newList CoverageList, baseList CoverageList) (delta DeltaCovList) {
-	d := GetFullDeltaCov(newList, baseList)
-	for _, v := range d {
-		if v.DeltaPer == "0.0%" {
-			continue
-		}
-		delta = append(delta, v)
-	}
-	return
+	_ = "STUB: not implemented"
+	return *new(DeltaCovList)
 }
 
 // GetChFileDeltaCov get two profile diff cov of changed files
 func GetChFileDeltaCov(newList CoverageList, baseList CoverageList, changedFiles []string) (list DeltaCovList) {
-	d := GetFullDeltaCov(newList, baseList)
-	dMap := d.Map()
-	for _, file := range changedFiles {
-		if _, ok := dMap[file]; ok {
-			list = append(list, dMap[file])
-		}
-	}
-	return
+	_ = "STUB: not implemented"
+	return *new(DeltaCovList)
 }
 
 // Delta calculate two coverage delta
-func Delta(new Coverage, base Coverage) float32 {
-	baseRatio, _ := base.Ratio()
-	newRatio, _ := new.Ratio()
-	return newRatio - baseRatio
-}
+func Delta(new Coverage, base Coverage) float32 { _ = "STUB: not implemented"; return 0 }
 
 // TotalDelta calculate two coverage delta
-func TotalDelta(new CoverageList, base CoverageList) float32 {
-	baseRatio, _ := base.TotalRatio()
-	newRatio, _ := new.TotalRatio()
-	return newRatio - baseRatio
-}
+func TotalDelta(new CoverageList, base CoverageList) float32 { _ = "STUB: not implemented"; return 0 }
 
 // Map returns maps the file name to its DeltaCov for faster retrieval & membership check
-func (d DeltaCovList) Map() map[string]DeltaCov {
-	m := make(map[string]DeltaCov)
-	for _, c := range d {
-		m[c.FileName] = c
-	}
-	return m
-}
+func (d DeltaCovList) Map() map[string]DeltaCov { _ = "STUB: not implemented"; return nil }
 
 // Sort sort DeltaCovList with filenames
-func (d DeltaCovList) Sort() {
-	sort.SliceStable(d, func(i, j int) bool {
-		return d[i].Name() < d[j].Name()
-	})
-}
+func (d DeltaCovList) Sort() { _ = "STUB: not implemented"; return }
 
 // Name returns the file name
 func (c *DeltaCov) Name() string {
-	return c.FileName
+	_ = "STUB: not implemented"
+
+	// GetLineCovLink get the LineCovLink of the DeltaCov
+	return ""
 }
 
-// GetLineCovLink get the LineCovLink of the DeltaCov
-func (c *DeltaCov) GetLineCovLink() string {
-	return c.LineCovLink
-}
+func (c *DeltaCov) GetLineCovLink() string { _ = "STUB: not implemented"; return "" }
 
 // SetLineCovLink set LineCovLink of the DeltaCov
-func (c *DeltaCov) SetLineCovLink(link string) {
-	c.LineCovLink = link
-}
+func (c *DeltaCov) SetLineCovLink(link string) { _ = "STUB: not implemented"; return }

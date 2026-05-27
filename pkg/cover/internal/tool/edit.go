@@ -5,11 +5,6 @@
 // Package edit implements buffered position-based editing of byte slices.
 package tool
 
-import (
-	"fmt"
-	"sort"
-)
-
 // A Buffer is a queue of edits to apply to a given byte slice.
 type Buffer struct {
 	old []byte
@@ -26,68 +21,31 @@ type edit struct {
 // An edits is a list of edits that is sortable by start offset, breaking ties by end offset.
 type edits []edit
 
-func (x edits) Len() int      { return len(x) }
-func (x edits) Swap(i, j int) { x[i], x[j] = x[j], x[i] }
-func (x edits) Less(i, j int) bool {
-	if x[i].start != x[j].start {
-		return x[i].start < x[j].start
-	}
-	return x[i].end < x[j].end
-}
+func (x edits) Len() int           { _ = "STUB: not implemented"; return 0 }
+func (x edits) Swap(i, j int)      { _ = "STUB: not implemented"; return }
+func (x edits) Less(i, j int) bool { _ = "STUB: not implemented"; return false }
 
 // NewBuffer returns a new buffer to accumulate changes to an initial data slice.
 // The returned buffer maintains a reference to the data, so the caller must ensure
 // the data is not modified until after the Buffer is done being used.
-func NewBuffer(data []byte) *Buffer {
-	return &Buffer{old: data}
-}
+func NewBuffer(data []byte) *Buffer { _ = "STUB: not implemented"; return nil }
 
-func (b *Buffer) Insert(pos int, new string) {
-	if pos < 0 || pos > len(b.old) {
-		panic("invalid edit position")
-	}
-	b.q = append(b.q, edit{pos, pos, new})
-}
+func (b *Buffer) Insert(pos int, new string) { _ = "STUB: not implemented"; return }
 
-func (b *Buffer) Delete(start, end int) {
-	if end < start || start < 0 || end > len(b.old) {
-		panic("invalid edit position")
-	}
-	b.q = append(b.q, edit{start, end, ""})
-}
+func (b *Buffer) Delete(start, end int) { _ = "STUB: not implemented"; return }
 
-func (b *Buffer) Replace(start, end int, new string) {
-	if end < start || start < 0 || end > len(b.old) {
-		panic("invalid edit position")
-	}
-	b.q = append(b.q, edit{start, end, new})
-}
+func (b *Buffer) Replace(start, end int, new string) { _ = "STUB: not implemented"; return }
 
 // Bytes returns a new byte slice containing the original data
 // with the queued edits applied.
 func (b *Buffer) Bytes() []byte {
+	_ = "STUB: not implemented"
 	// Sort edits by starting position and then by ending position.
 	// Breaking ties by ending position allows insertions at point x
 	// to be applied before a replacement of the text at [x, y).
-	sort.Stable(b.q)
-
-	var new []byte
-	offset := 0
-	for i, e := range b.q {
-		if e.start < offset {
-			e0 := b.q[i-1]
-			panic(fmt.Sprintf("overlapping edits: [%d,%d)->%q, [%d,%d)->%q", e0.start, e0.end, e0.new, e.start, e.end, e.new))
-		}
-		new = append(new, b.old[offset:e.start]...)
-		offset = e.end
-		new = append(new, e.new...)
-	}
-	new = append(new, b.old[offset:]...)
-	return new
+	return nil
 }
 
 // String returns a string containing the original data
 // with the queued edits applied.
-func (b *Buffer) String() string {
-	return string(b.Bytes())
-}
+func (b *Buffer) String() string { _ = "STUB: not implemented"; return "" }

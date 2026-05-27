@@ -18,15 +18,12 @@ package qiniu
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	"github.com/qiniu/api.v7/v7/auth/qbox"
 	"github.com/qiniu/api.v7/v7/client"
 	"github.com/qiniu/api.v7/v7/storage"
-	"github.com/sirupsen/logrus"
 )
 
 // ObjectHandle is the interface contains the operations on an object in a qiniu cloud bucket
@@ -48,79 +45,29 @@ type QnObjectHandle struct {
 // ErrObjectNotExist will be returned if the object is not found.
 // The caller must call Close on the returned Reader when done reading.
 func (o *QnObjectHandle) NewReader(ctx context.Context) (io.ReadCloser, error) {
-	return o.NewRangeReader(ctx, 0, -1)
+	_ = "STUB: not implemented"
+	return *new(io.ReadCloser), nil
 }
 
 // NewRangeReader reads parts of an object, reading at most length bytes starting
 // from the given offset. If length is negative, the object is read until the end.
 func (o *QnObjectHandle) NewRangeReader(ctx context.Context, offset, length int64) (io.ReadCloser, error) {
-	verb := "GET"
-	if length == 0 {
-		verb = "HEAD"
-	}
-
-	var res *http.Response
-	var err error
-
-	err = runWithRetry(3, func() (bool, error) {
-		headers := http.Header{}
-		start := offset
-		if length < 0 && start >= 0 {
-			headers.Set("Range", fmt.Sprintf("bytes=%d-", start))
-		} else if length > 0 {
-			// The end character isn't affected by how many bytes we have seen.
-			headers.Set("Range", fmt.Sprintf("bytes=%d-%d", start, offset+length-1))
-		}
-
-		deadline := time.Now().Add(time.Second * 60 * 10).Unix()
-		accessURL := storage.MakePrivateURL(o.mac, o.cfg.Domain, o.key, deadline)
-		res, err = o.client.DoRequest(ctx, verb, accessURL, headers)
-		if err != nil {
-			time.Sleep(time.Second) //TODO enhance
-			return true, err
-		}
-
-		if res.StatusCode == http.StatusNotFound {
-			res.Body.Close()
-			return true, fmt.Errorf("qiniu storage: object not exists")
-		}
-
-		return shouldRetry(res), nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return res.Body, nil
+	_ = "STUB: not implemented"
+	return *new(io.ReadCloser), nil
 }
 
-func runWithRetry(maxTry int, f func() (bool, error)) error {
-	var err error
-	for maxTry > 0 {
-		var needRetry bool
-		needRetry, err = f() // fix -  needRetry, err := f(), err hides the outside error
-		if err != nil {
-			logrus.Warnf("err occurred: %v. try again", err)
-		} else if needRetry {
-			logrus.Warn("results do not meet the expectation. try again")
-		} else {
-			break
-		}
-		time.Sleep(time.Millisecond * 100)
-		maxTry = maxTry - 1
-	}
+// The end character isn't affected by how many bytes we have seen.
 
-	return err
-}
+//TODO enhance
+
+func runWithRetry(maxTry int, f func() (bool, error)) error { _ = "STUB: not implemented"; return nil }
+
+// fix -  needRetry, err := f(), err hides the outside error
 
 func shouldRetry(res *http.Response) bool {
+	_ = "STUB: not implemented"
 
 	// 571 and 573 mean the request was limited by cloud storage because of concurrency count exceed
 	// so it's better to retry after a while
-	if res.StatusCode == 571 || res.StatusCode == 573 {
-		return true
-	}
-
 	return false
 }

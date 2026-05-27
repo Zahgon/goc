@@ -81,8 +81,4 @@ func init() {
 }
 
 // Execute the goc tool
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		log.Fatalln(err)
-	}
-}
+func Execute() { _ = "STUB: not implemented"; return }

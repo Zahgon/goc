@@ -17,24 +17,11 @@
 package cover
 
 import (
-	"fmt"
-	"os"
-	"path"
-	"path/filepath"
 	"text/template"
 )
 
 // InjectCountersHandlers generate a file _cover_http_apis.go besides the main.go file
-func InjectCountersHandlers(tc TestCover, dest string) error {
-	f, err := os.Create(dest)
-	if err != nil {
-		return err
-	}
-	if err := coverMainTmpl.Execute(f, tc); err != nil {
-		return err
-	}
-	return nil
-}
+func InjectCountersHandlers(tc TestCover, dest string) error { _ = "STUB: not implemented"; return nil }
 
 var coverMainTmpl = template.Must(template.New("coverMain").Parse(coverMain))
 
@@ -450,67 +437,19 @@ var {{$v}} = &_cover{{$i}}.{{$cover.Var}}
 `
 
 func InjectCacheCounters(covers map[string][]*PackageCover, cache map[string]*PackageCover) []error {
-	var errs []error
-	for k, v := range covers {
-		if pkg, ok := cache[k]; ok {
-			err := checkCacheDir(pkg.Package.Dir)
-			if err != nil {
-				errs = append(errs, err)
-				continue
-			}
-			_, pkgName := path.Split(k)
-			err = injectCache(v, pkgName, fmt.Sprintf("%s/%s", pkg.Package.Dir, pkg.Package.GoFiles[0]))
-			if err != nil {
-				errs = append(errs, err)
-				continue
-			}
-		}
-	}
-	return errs
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // InjectCacheCounters generate a file _cover_http_apis.go besides the main.go file
 func injectCache(covers []*PackageCover, pkg, dest string) error {
-	f, err := os.Create(dest)
-	if err != nil {
-		return err
-	}
-
-	if err := coverParentFileTmpl.Execute(f, pkg); err != nil {
-		return err
-	}
-
-	if err := coverParentVarsTmpl.Execute(f, covers); err != nil {
-		return err
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
-func checkCacheDir(p string) error {
-	_, err := os.Stat(p)
-	if os.IsNotExist(err) {
-		err := os.Mkdir(p, 0755)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
+func checkCacheDir(p string) error { _ = "STUB: not implemented"; return nil }
 
 func injectGlobalCoverVarFile(ci *CoverInfo, content string) error {
-	coverFile, err := os.Create(filepath.Join(ci.Target, ci.GlobalCoverVarImportPath, "cover.go"))
-	if err != nil {
-		return err
-	}
-	defer coverFile.Close()
-
-	packageName := "package " + filepath.Base(ci.GlobalCoverVarImportPath) + "\n\n"
-
-	_, err = coverFile.WriteString(packageName)
-	if err != nil {
-		return err
-	}
-	_, err = coverFile.WriteString(content)
-
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }

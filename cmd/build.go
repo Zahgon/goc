@@ -21,8 +21,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/qiniu/goc/pkg/build"
-	"github.com/qiniu/goc/pkg/cover"
 	"github.com/spf13/cobra"
 )
 
@@ -62,36 +60,13 @@ func init() {
 	rootCmd.AddCommand(buildCmd)
 }
 
-func runBuild(args []string, wd string) {
-	gocBuild, err := build.NewBuild(buildFlags, args, wd, buildOutput)
-	if err != nil {
-		log.Fatalf("Fail to build: %v", err)
-	}
-	// remove temporary directory if needed
-	defer gocBuild.Clean()
-	// doCover with original buildFlags, with new GOPATH( tmp:original )
-	// in the tmp directory
-	ci := &cover.CoverInfo{
-		Args:                     buildFlags,
-		GoPath:                   gocBuild.NewGOPATH,
-		Target:                   gocBuild.TmpDir,
-		Mode:                     coverMode.String(),
-		AgentPort:                agentPort.String(),
-		Center:                   center,
-		Singleton:                singleton,
-		IsMod:                    gocBuild.IsMod,
-		ModRootPath:              gocBuild.ModRootPath,
-		OneMainPackage:           true, // it is a go build
-		GlobalCoverVarImportPath: gocBuild.GlobalCoverVarImportPath,
-	}
-	err = cover.Execute(ci)
-	if err != nil {
-		log.Fatalf("Fail to build: %v", err)
-	}
-	// do install in the temporary directory
-	err = gocBuild.Build()
-	if err != nil {
-		log.Fatalf("Fail to build: %v", err)
-	}
-	return
-}
+func runBuild(args []string, wd string) { _ = "STUB: not implemented"; return }
+
+// remove temporary directory if needed
+
+// doCover with original buildFlags, with new GOPATH( tmp:original )
+// in the tmp directory
+
+// it is a go build
+
+// do install in the temporary directory

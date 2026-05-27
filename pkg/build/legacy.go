@@ -18,87 +18,31 @@ package build
 
 import (
 	"os"
-	"path/filepath"
-	"strings"
-
-	log "github.com/sirupsen/logrus"
 
 	"github.com/qiniu/goc/pkg/cover"
-	"github.com/tongjingran/copy"
 )
 
-func (b *Build) cpLegacyProject() {
-	visited := make(map[string]bool)
-	for k, v := range b.Pkgs {
-		dst := filepath.Join(b.TmpDir, "src", k)
-		src := v.Dir
+func (b *Build) cpLegacyProject() { _ = "STUB: not implemented"; return }
 
-		if _, ok := visited[src]; ok {
-			// Skip if already copied
-			continue
-		}
-
-		if err := copy.Copy(src, dst, copy.Options{Skip: skipCopy}); err != nil {
-			log.Errorf("Failed to Copy the folder from %v to %v, the error is: %v ", src, dst, err)
-		}
-
-		visited[src] = true
-
-		b.cpDepPackages(v, visited)
-	}
-}
+// Skip if already copied
 
 // only cp dependency in root(current gopath),
 // skip deps in other GOPATHs
 func (b *Build) cpDepPackages(pkg *cover.Package, visited map[string]bool) {
-	gopath := pkg.Root
-	for _, dep := range pkg.Deps {
-		src := filepath.Join(gopath, "src", dep)
-		// Check if copied
-		if _, ok := visited[src]; ok {
-			// Skip if already copied
-			continue
-		}
-		// Check if we can found in the root gopath
-		_, err := os.Stat(src)
-		if err != nil {
-			continue
-		}
-
-		dst := filepath.Join(b.TmpDir, "src", dep)
-
-		if err := copy.Copy(src, dst, copy.Options{Skip: skipCopy}); err != nil {
-			log.Errorf("Failed to Copy the folder from %v to %v, the error is: %v ", src, dst, err)
-		}
-
-		visited[src] = true
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
-func (b *Build) cpNonStandardLegacy() {
-	for _, v := range b.Pkgs {
-		if v.Name == "main" {
-			dst := b.TmpDir
-			src := v.Dir
+// Check if copied
 
-			if err := copy.Copy(src, dst, copy.Options{Skip: skipCopy}); err != nil {
-				log.Printf("Failed to Copy the folder from %v to %v, the error is: %v ", src, dst, err)
-			}
-			break
-		}
-	}
-}
+// Skip if already copied
+
+// Check if we can found in the root gopath
+
+func (b *Build) cpNonStandardLegacy() { _ = "STUB: not implemented"; return }
 
 // skipCopy skip copy .git dir and irregular files
 func skipCopy(src string, info os.FileInfo) (bool, error) {
-	irregularModeType := os.ModeNamedPipe | os.ModeSocket | os.ModeDevice | os.ModeCharDevice | os.ModeIrregular
-	if strings.HasSuffix(src, "/.git") {
-		log.Infof("Skip .git dir [%s]", src)
-		return true, nil
-	}
-	if info.Mode()&irregularModeType != 0 {
-		log.Warnf("Skip file [%s], the file mode is [%s]", src, info.Mode().String())
-		return true, nil
-	}
+	_ = "STUB: not implemented"
 	return false, nil
 }

@@ -17,12 +17,7 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
-
 	"github.com/spf13/cobra"
-	"golang.org/x/tools/cover"
-	"k8s.io/test-infra/gopherage/pkg/cov"
-	"k8s.io/test-infra/gopherage/pkg/util"
 )
 
 var mergeCmd = &cobra.Command{
@@ -46,31 +41,4 @@ func init() {
 	rootCmd.AddCommand(mergeCmd)
 }
 
-func runMerge(args []string, output string) {
-	if len(args) == 0 {
-		log.Fatalln("Expected at least one coverage file.")
-		return
-	}
-
-	profiles := make([][]*cover.Profile, len(args))
-	for _, path := range args {
-		profile, err := util.LoadProfile(path)
-		if err != nil {
-			log.Fatalf("failed to open %s: %v", path, err)
-			return
-		}
-		profiles = append(profiles, profile)
-	}
-
-	merged, err := cov.MergeMultipleProfiles(profiles)
-	if err != nil {
-		log.Fatalf("failed to merge files: %v", err)
-		return
-	}
-
-	err = util.DumpProfile(output, merged)
-	if err != nil {
-		log.Fatalln(err)
-		return
-	}
-}
+func runMerge(args []string, output string) { _ = "STUB: not implemented"; return }

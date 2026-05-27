@@ -16,72 +16,19 @@
 
 package build
 
-import (
-	"fmt"
-	"os"
-	"os/exec"
-	"strings"
-
-	log "github.com/sirupsen/logrus"
-)
-
 // NewInstall creates a Build struct which can install from goc temporary directory
 func NewInstall(buildflags string, args []string, workingDir string) (*Build, error) {
-	if err := checkParameters(args, workingDir); err != nil {
-		return nil, err
-	}
-	b := &Build{
-		BuildFlags: buildflags,
-		Packages:   strings.Join(args, " "),
-		WorkingDir: workingDir,
-	}
-	if false == b.validatePackageForInstall() {
-		log.Errorln(ErrWrongPackageTypeForInstall)
-		return nil, ErrWrongPackageTypeForInstall
-	}
-	if err := b.MvProjectsToTmp(); err != nil {
-		return nil, err
-	}
-	return b, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
 // Install use the 'go install' tool to install packages
-func (b *Build) Install() error {
-	log.Println("Go building in temp...")
-	cmd := exec.Command("/bin/bash", "-c", "go install "+b.BuildFlags+" "+b.Packages)
-	cmd.Dir = b.TmpWorkingDir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+func (b *Build) Install() error { _ = "STUB: not implemented"; return nil }
 
-	whereToInstall, err := b.findWhereToInstall()
-	if err != nil {
-		// ignore the err
-		log.Errorf("No place to install: %v", err)
-	}
-	// Change the temp GOBIN, to force binary install to original place
-	cmd.Env = append(os.Environ(), fmt.Sprintf("GOBIN=%v", whereToInstall))
-	if b.NewGOPATH != "" {
-		// Change to temp GOPATH for go install command
-		cmd.Env = append(cmd.Env, fmt.Sprintf("GOPATH=%v", b.NewGOPATH))
-	}
+// ignore the err
 
-	log.Infof("go install cmd is: %v", cmd.Args)
-	err = cmd.Start()
-	if err != nil {
-		log.Errorf("Fail to execute: %v. The error is: %v", cmd.Args, err)
-		return err
-	}
-	if err = cmd.Wait(); err != nil {
-		log.Errorf("go install failed. The error is: %v", err)
-		return err
-	}
-	log.Infof("Go install successful. Binary installed in: %v", whereToInstall)
-	return nil
-}
+// Change the temp GOBIN, to force binary install to original place
 
-func (b *Build) validatePackageForInstall() bool {
-	if b.Packages == "." || b.Packages == "" || b.Packages == "./..." {
-		return true
-	}
-	return false
-}
+// Change to temp GOPATH for go install command
+
+func (b *Build) validatePackageForInstall() bool { _ = "STUB: not implemented"; return false }

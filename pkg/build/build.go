@@ -17,14 +17,7 @@
 package build
 
 import (
-	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"strings"
-
 	"github.com/qiniu/goc/pkg/cover"
-	log "github.com/sirupsen/logrus"
 )
 
 // Build is to describe the building/installing process of a goc build/install
@@ -61,108 +54,32 @@ type Build struct {
 // NewBuild creates a Build struct which can build from goc temporary directory,
 // and generate binary in current working directory
 func NewBuild(buildflags string, args []string, workingDir string, outputDir string) (*Build, error) {
-	if err := checkParameters(args, workingDir); err != nil {
-		return nil, err
-	}
-	// buildflags = buildflags + " -o " + outputDir
-	b := &Build{
-		BuildFlags: buildflags,
-		Packages:   strings.Join(args, " "),
-		WorkingDir: workingDir,
-	}
-	if false == b.validatePackageForBuild() {
-		log.Errorln(ErrWrongPackageTypeForBuild)
-		return nil, ErrWrongPackageTypeForBuild
-	}
-	if err := b.MvProjectsToTmp(); err != nil {
-		return nil, err
-	}
-	dir, err := b.determineOutputDir(outputDir)
-	b.Target = dir
-	if err != nil {
-		return nil, err
-	}
-	return b, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
+
+// buildflags = buildflags + " -o " + outputDir
 
 // Build calls 'go build' tool to do building
-func (b *Build) Build() error {
-	log.Infoln("Go building in temp...")
-	// new -o will overwrite  previous ones
-	b.BuildFlags = b.BuildFlags + " -o " + b.Target
-	cmd := exec.Command("/bin/bash", "-c", "go build "+b.BuildFlags+" "+b.Packages)
-	cmd.Dir = b.TmpWorkingDir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+func (b *Build) Build() error { _ = "STUB: not implemented"; return nil }
 
-	if b.NewGOPATH != "" {
-		// Change to temp GOPATH for go install command
-		cmd.Env = append(os.Environ(), fmt.Sprintf("GOPATH=%v", b.NewGOPATH))
-	}
+// new -o will overwrite  previous ones
 
-	log.Printf("go build cmd is: %v", cmd.Args)
-	err := cmd.Start()
-	if err != nil {
-		return fmt.Errorf("fail to execute: %v, err: %w", cmd.Args, err)
-	}
-	if err = cmd.Wait(); err != nil {
-		return fmt.Errorf("fail to execute: %v, err: %w", cmd.Args, err)
-	}
-	log.Infoln("Go build exit successful.")
-	return nil
-}
+// Change to temp GOPATH for go install command
 
 // determineOutputDir, as we only allow . as package name,
 // the binary name is always same as the directory name of current directory
 func (b *Build) determineOutputDir(outputDir string) (string, error) {
-	if b.TmpDir == "" {
-		return "", fmt.Errorf("can only be called after Build.MvProjectsToTmp(): %w", ErrEmptyTempWorkingDir)
-	}
-
-	// fix #43
-	if outputDir != "" {
-		abs, err := filepath.Abs(outputDir)
-		if err != nil {
-			return "", fmt.Errorf("Fail to transform the path: %v to absolute path: %v", outputDir, err)
-
-		}
-		return abs, nil
-	}
-	// fix #43
-	// use target name from `go list -json ./...` of the main module
-	targetName := ""
-	for _, pkg := range b.Pkgs {
-		if pkg.Name == "main" {
-			if pkg.Target != "" {
-				targetName = filepath.Base(pkg.Target)
-			} else {
-				targetName = filepath.Base(pkg.Dir)
-			}
-			break
-		}
-	}
-
-	return filepath.Join(b.WorkingDir, targetName), nil
+	_ = "STUB: not implemented"
+	return "", nil
 }
+
+// fix #43
+
+// fix #43
+// use target name from `go list -json ./...` of the main module
 
 // validatePackageForBuild only allow . as package name
-func (b *Build) validatePackageForBuild() bool {
-	if b.Packages == "." || b.Packages == "" {
-		return true
-	}
-	return false
-}
+func (b *Build) validatePackageForBuild() bool { _ = "STUB: not implemented"; return false }
 
-func checkParameters(args []string, workingDir string) error {
-	if len(args) > 1 {
-		log.Errorln(ErrTooManyArgs)
-		return ErrTooManyArgs
-	}
-
-	if workingDir == "" {
-		return ErrInvalidWorkingDir
-	}
-
-	log.Infof("Working directory: %v", workingDir)
-	return nil
-}
+func checkParameters(args []string, workingDir string) error { _ = "STUB: not implemented"; return nil }

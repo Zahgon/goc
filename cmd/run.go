@@ -99,14 +99,6 @@ func init() {
 }
 
 func newLocalListener(addr string) net.Listener {
-	if addr == "" {
-		addr = "127.0.0.1:0"
-	}
-	l, err := net.Listen("tcp", addr)
-	if err != nil {
-		if l, err = net.Listen("tcp6", "[::1]:0"); err != nil {
-			log.Fatalf("failed to listen on a port: %v", err)
-		}
-	}
-	return l
+	_ = "STUB: not implemented"
+	return *new(net.Listener)
 }

@@ -18,10 +18,4 @@ func main() {
 	}
 }
 
-func mapSlice[T any, U any](fn func(T) U, src []T) []U {
-	dst := make([]U, len(src))
-	for i, x := range src {
-		dst[i] = fn(x)
-	}
-	return dst
-}
+func mapSlice[T any, U any](fn func(T) U, src []T) []U { _ = "STUB: not implemented"; return nil }
